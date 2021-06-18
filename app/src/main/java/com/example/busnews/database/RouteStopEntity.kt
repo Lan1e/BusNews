@@ -2,7 +2,7 @@ package com.example.busnews.database
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.example.busnews.database.DownTownRouteEntity.Companion.TABLE_NAME
+import com.example.busnews.database.RouteStopEntity.Companion.TABLE_NAME
 
 @Entity(tableName = TABLE_NAME)
 class RouteStopEntity(

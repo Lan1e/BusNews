@@ -75,7 +75,7 @@ object BusDataManager : ViewModel() {
     }
 
     private fun doIfRouteNotExist(downTown: String, listener: () -> Unit) {
-        if (BusDatabase().getRoomDao().searchRouteByDownTown(downTown).isEmpty()) {
+        if (BusDatabase(App.context).getRoomDao().searchRouteByDownTown(downTown).isEmpty()) {
             listener.invoke()
         }
     }
