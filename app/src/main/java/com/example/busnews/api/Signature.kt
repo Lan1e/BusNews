@@ -1,4 +1,4 @@
-package com.example.busnews
+package com.example.busnews.api
 
 import android.util.Base64
 import java.security.SignatureException

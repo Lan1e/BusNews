@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <string-array name="towns_entries">
+        <item>新北市</item>
+        <item>台北市</item>
+    </string-array>
+    <string-array name="towns_values">
+        <item>新北市</item>
+        <item>台北市</item>
+    </string-array>
+    <string-array name="routes_entries">
+        <item>59</item>
+        <item>37</item>
+        <item>69</item>
+    </string-array>
+    <string-array name="routes_values">
+        <item>59</item>
+        <item>37</item>
+        <item>69</item>
+    </string-array>
+    <string-array name="stop_entries">
+        <item>起點</item>
+        <item>中間站</item>
+        <item>終點</item>
+    </string-array>
+    <string-array name="stop_values">
+        <item>起點</item>
+        <item>中間站</item>
+        <item>終點</item>
+    </string-array>
+</resources>
