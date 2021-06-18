@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.example.busnews.api.BusAPIHelper
 import com.example.busnews.api.ApiVo
 import com.example.busnews.data.ResultPack
+import com.example.busnews.database.BusDatabase
 import com.google.gson.Gson
 
 object BusDataManager : ViewModel() {
@@ -62,6 +63,21 @@ object BusDataManager : ViewModel() {
                 }
             }
         )
+    }
+
+    fun updateRoute() {
+        apiHelper.fetchAllRouteByDownTown(
+            onResponse = { response ->
+                routes
+
+            }
+        )
+    }
+
+    private fun doIfRouteNotExist(downTown: String, listener: () -> Unit) {
+        if (BusDatabase().getRoomDao().searchRouteByDownTown(downTown).isEmpty()) {
+            listener.invoke()
+        }
     }
 
     private fun getResultFromVo(response: String?): List<ResultPack> {

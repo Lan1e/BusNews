@@ -19,7 +19,7 @@ class BusAPIHelper {
     private val xDate get() = currentDateTime.format(DateTimeFormatter.RFC_1123_DATE_TIME)
     private val signDate get() = "x-date: $xDate"
 
-    fun fetchDownTownRoute(
+    fun fetchAllRouteByDownTown(
         onFailure: (() -> Unit)? = null,
         onResponse: ((String?) -> Unit)? = null
     ) {
