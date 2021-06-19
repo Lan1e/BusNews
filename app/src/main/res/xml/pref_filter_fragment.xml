@@ -8,13 +8,9 @@
             android:key="filter_option_town"
             android:title="縣市" />
         <androidx.preference.ListPreference
-            android:entries="@array/routes_entries"
-            android:entryValues="@array/routes_values"
             android:key="filter_option_route"
             android:title="路線" />
         <androidx.preference.ListPreference
-            android:entries="@array/stop_entries"
-            android:entryValues="@array/stop_values"
             android:key="filter_option_stop"
             android:title="站牌" />
     </androidx.preference.PreferenceCategory>

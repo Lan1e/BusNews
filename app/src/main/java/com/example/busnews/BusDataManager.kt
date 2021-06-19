@@ -1,19 +1,34 @@
 package com.example.busnews
 
-import androidx.lifecycle.ViewModel
+import android.content.Context
 import com.example.busnews.api.BusAPIHelper
-import com.example.busnews.api.ApiVo
-import com.example.busnews.data.ResultPack
+import com.example.busnews.data.BusInfoModel
+import com.example.busnews.data.RouteInfoModel
 import com.example.busnews.database.BusDatabase
-import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-object BusDataManager : ViewModel() {
+object BusDataManager {
     interface DataUpdateListener {
-        fun onTownUpdate(newTown: ArrayList<String>)
-        fun onRouteUpdate(newRoute: ArrayList<String>)
-        fun onStopUpdate(newStop: ArrayList<String>)
-        fun onResultUpdate(newResult: ArrayList<ResultPack>)
+        fun onTownUpdate(newTown: List<String>)
+        fun onRouteUpdate(newRoute: List<String>)
+        fun onStopUpdate(newStop: List<String>)
+        fun onResultUpdate(newResult: List<BusInfoModel>)
     }
+
+    private val sharedPref =
+        App.context.getSharedPreferences("com.example.aqiinfo_preferences", Context.MODE_PRIVATE)
+
+    private val currentDownTown
+        get() = sharedPref.getString("filter_option_town", "") ?: ""
+
+    private val currentRoute
+        get() = sharedPref.getString("filter_option_route", "") ?: ""
+
+    private val currentStop
+        get() = sharedPref.getString("filter_option_stop", "") ?: ""
 
     private val dataUpdateListeners = ArrayList<DataUpdateListener>()
     private val apiHelper = BusAPIHelper()
@@ -23,17 +38,9 @@ object BusDataManager : ViewModel() {
             add(it)
         }
     }
-    private val routes = ArrayList<String>().apply {
-        App.context.resources.getStringArray(R.array.routes_values).forEach {
-            add(it)
-        }
-    }
-    private val stops = ArrayList<String>().apply {
-        App.context.resources.getStringArray(R.array.stop_values).forEach {
-            add(it)
-        }
-    }
-    private val result = ArrayList<ResultPack>()
+    private val routes = ArrayList<String>()
+    private val stops = ArrayList<String>()
+    private val result = ArrayList<BusInfoModel>()
 
     var isDataInitialized = false
         private set
@@ -52,41 +59,136 @@ object BusDataManager : ViewModel() {
 
     fun updateResult() {
         apiHelper.fetchBusDelayByStop(
+            downTown = currentDownTown,
+            route = currentRoute,
+            stop = currentStop,
             onFailure = {
 
             },
-            onResponse = { response ->
-                result.clear()
-                result.addAll(getResultFromVo(response))
-                dataUpdateListeners.forEach {
-                    it.onResultUpdate(result)
+            onResponse = { results ->
+                this.result.clear()
+                this.result.addAll(results)
+                GlobalScope.launch(Dispatchers.Main) {
+                    dataUpdateListeners.forEach {
+                        it.onResultUpdate(results)
+                    }
                 }
             }
         )
     }
 
     fun updateRoute() {
-        apiHelper.fetchAllRouteByDownTown(
-            onResponse = { response ->
-                routes
+        getRouteFromDatabase(currentDownTown) {
+            if (it.isNotEmpty()) {
+                updateRouteByDB(it)
+            } else {
+                updateRouteByAPI(currentDownTown)
+            }
+        }
+    }
 
+    private fun updateRouteByAPI(downTown: String) {
+        apiHelper.fetchAllRouteByDownTown(
+            downTown = downTown,
+            onResponse = { response ->
+                this.routes.apply {
+                    clear()
+                    response.map {
+                        it.name
+                    }.let { routes ->
+                        addAll(routes)
+                        GlobalScope.launch(Dispatchers.Main) {
+                            dataUpdateListeners.forEach {
+                                it.onRouteUpdate(routes)
+                            }
+                        }
+                    }
+                }
             }
         )
     }
 
-    private fun doIfRouteNotExist(downTown: String, listener: () -> Unit) {
-        if (BusDatabase(App.context).getRoomDao().searchRouteByDownTown(downTown).isEmpty()) {
-            listener.invoke()
+    private fun updateRouteByDB(routes: List<String>) =
+        this.routes.apply {
+            clear()
+            addAll(routes)
+            GlobalScope.launch(Dispatchers.Main) {
+                dataUpdateListeners.forEach {
+                    it.onRouteUpdate(routes)
+                }
+            }
+        }
+
+
+    private fun getRouteFromDatabase(
+        downTown: String,
+        listener: (List<String>) -> Unit
+    ) {
+        GlobalScope.launch(Dispatchers.IO) {
+            BusDatabase(App.context).getRoomDao().searchRouteByDownTown(downTown).let {
+                withContext(Dispatchers.Main) {
+                    listener.invoke(it)
+                }
+            }
         }
     }
 
-    private fun getResultFromVo(response: String?): List<ResultPack> {
-        // need update
-        return response?.let {
-            Gson().fromJson(it, ApiVo::class.java)
-        }?.list?.map {
-            ResultPack()
-        } ?: ArrayList()
+    fun updateStop() {
+        getStopFromDataBase(currentDownTown, currentRoute) {
+            if (it.isNotEmpty()) {
+                updateStopByDB(it)
+            } else {
+                updateStopByAPI(currentDownTown, currentRoute)
+            }
+        }
+    }
+
+    private fun updateStopByAPI(downTown: String, route: String) {
+        apiHelper.fetchAllStopsInOrderByRoute(
+            downTown = downTown,
+            route = route,
+            onResponse = { response ->
+                this.stops.apply {
+                    clear()
+                    response.map {
+                        it.name
+                    }.let { stops ->
+                        addAll(stops)
+                        GlobalScope.launch(Dispatchers.Main) {
+                            dataUpdateListeners.forEach {
+                                it.onStopUpdate(stops)
+                            }
+                        }
+                    }
+                }
+            }
+        )
+    }
+
+    private fun updateStopByDB(stops: List<String>) {
+        this.stops.apply {
+            clear()
+            addAll(stops)
+            GlobalScope.launch(Dispatchers.Main) {
+                dataUpdateListeners.forEach {
+                    it.onStopUpdate(stops)
+                }
+            }
+        }
+    }
+
+    private fun getStopFromDataBase(
+        downTown: String,
+        route: String,
+        listener: (List<String>) -> Unit
+    ) {
+        GlobalScope.launch(Dispatchers.IO) {
+            BusDatabase(App.context).getRoomDao().searchStop(downTown, route).let {
+                withContext(Dispatchers.Main) {
+                    listener.invoke(it)
+                }
+            }
+        }
     }
 
     fun addDataUpdateListener(listener: DataUpdateListener) {

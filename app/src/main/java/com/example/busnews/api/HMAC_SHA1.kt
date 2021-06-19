@@ -1,13 +1,17 @@
 package com.example.busnews.api
 
-import android.util.Base64
+
+import android.util.Base64.encodeToString
 import java.security.SignatureException
+import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-class Signature {
-    fun createSignature(xData: String, AppKey: String): String {
-        try {
+object HMAC_SHA1 {
+    @Throws(SignatureException::class)
+    fun Signature(xData: String, AppKey: String): String {
+        return try {
+            val encoder = Base64.getEncoder()
             // get an hmac_sha1 key from the raw key bytes
             val signingKey = SecretKeySpec(AppKey.toByteArray(charset("UTF-8")), "HmacSHA1")
 
@@ -17,9 +21,8 @@ class Signature {
 
             // compute the hmac on input data bytes
             val rawHmac = mac.doFinal(xData.toByteArray(charset("UTF-8")))
-            val encoder = Base64.encode(rawHmac,Base64.DEFAULT).toString()
-            return encoder
 
+            encoder.encodeToString(rawHmac).replace("\n", "")
         } catch (e: Exception) {
             throw SignatureException("Failed to generate HMAC : " + e.message)
         }

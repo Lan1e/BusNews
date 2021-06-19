@@ -5,8 +5,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import com.example.busnews.R
-import com.example.busnews.data.ResultPack
-import kotlinx.coroutines.channels.consumesAll
+import com.example.busnews.data.BusInfoModel
 
 class ResultFragment : PreferenceFragmentCompat() {
     private val viewModel get() = (activity as? MainActivity)?.viewModel
@@ -30,7 +29,7 @@ class ResultFragment : PreferenceFragmentCompat() {
         }
     }
 
-    private fun updateResults(results: List<ResultPack>) {
+    private fun updateResults(results: List<BusInfoModel>) {
         clearPrefCategory()
         addPrefCategoryContents(results)
     }
@@ -38,11 +37,11 @@ class ResultFragment : PreferenceFragmentCompat() {
     private fun clearPrefCategory() =
         categoryResult.removeAll()
 
-    private fun addPrefCategoryContents(results: List<ResultPack>) {
+    private fun addPrefCategoryContents(results: List<BusInfoModel>) {
         results.forEach {
             categoryResult.addPreference(Preference(activity).apply {
-//                title = it.route
-//                summary = it.remainTime
+                title = it.estimateDelay
+                summary = it.plateNumber
             })
         }
     }

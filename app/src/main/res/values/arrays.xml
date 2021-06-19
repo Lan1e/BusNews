@@ -4,29 +4,47 @@
     <string-array name="towns_entries">
         <item>新北市</item>
         <item>台北市</item>
+        <item>桃園市</item>
+        <item>台中市</item>
+        <item>台南市</item>
+        <item>高雄市</item>
+        <item>基隆市</item>
+        <item>金門縣</item>
+        <item>新竹市</item>
+        <item>新竹縣</item>
+        <item>苗栗縣</item>
+        <item>彰化縣</item>
+        <item>南投縣</item>
+        <item>雲林縣</item>
+        <item>嘉義縣</item>
+        <item>嘉義市</item>
+        <item>屏東縣</item>
+        <item>宜蘭縣</item>
+        <item>花蓮縣</item>
+        <item>台東縣</item>
+        <item>澎湖縣</item>
     </string-array>
     <string-array name="towns_values">
-        <item>新北市</item>
-        <item>台北市</item>
-    </string-array>
-    <string-array name="routes_entries">
-        <item>59</item>
-        <item>37</item>
-        <item>69</item>
-    </string-array>
-    <string-array name="routes_values">
-        <item>59</item>
-        <item>37</item>
-        <item>69</item>
-    </string-array>
-    <string-array name="stop_entries">
-        <item>起點</item>
-        <item>中間站</item>
-        <item>終點</item>
-    </string-array>
-    <string-array name="stop_values">
-        <item>起點</item>
-        <item>中間站</item>
-        <item>終點</item>
+        <item>NewTaipei</item>
+        <item>Taipei</item>
+        <item>Taoyuan</item>
+        <item>Taichung</item>
+        <item>Tainan</item>
+        <item>Kaohsiung</item>
+        <item>Keelung</item>
+        <item>KinmenCounty</item>
+        <item>Hsinchu</item>
+        <item>HsinchuCounty</item>
+        <item>MiaoliCounty</item>
+        <item>ChanghuaCounty</item>
+        <item>NantouCounty</item>
+        <item>YunlinCounty</item>
+        <item>ChiayiCounty</item>
+        <item>Chiayi</item>
+        <item>PingtungCounty</item>
+        <item>YilanCounty</item>
+        <item>HualienCounty</item>
+        <item>TaitungCounty</item>
+        <item>PenghuCounty</item>
     </string-array>
 </resources>
