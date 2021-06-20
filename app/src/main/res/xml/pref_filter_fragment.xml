@@ -3,15 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <androidx.preference.PreferenceCategory android:key="filter_category">
         <androidx.preference.ListPreference
+            android:icon="@drawable/taiwan"
             android:entries="@array/towns_entries"
             android:entryValues="@array/towns_values"
             android:key="filter_option_town"
             android:title="縣市" />
         <androidx.preference.ListPreference
+            android:icon="@drawable/bus"
             android:persistent="false"
             android:key="filter_option_route"
             android:title="路線" />
         <androidx.preference.ListPreference
+            android:icon="@drawable/stop"
             android:persistent="false"
             android:key="filter_option_stop"
             android:title="站牌" />
