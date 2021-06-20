@@ -28,9 +28,8 @@ class ResultFragment : PreferenceFragmentCompat() {
                 result.observe(activity) {
                     if (it.isEmpty()) {
                         Toast.makeText(App.context, "目前附近沒有符合條件的車輛", LENGTH_LONG).show()
-                    } else {
-                        updateResults(it)
                     }
+                    updateResults(it)
                 }
             }
         }
