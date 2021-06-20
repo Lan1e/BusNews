@@ -108,6 +108,7 @@ class FilterFragment : PreferenceFragmentCompat() {
                             val currentRoute = BusDataManager.currentSubRoute
                             if (currentRoute.isNotEmpty() && entryValues.contains(currentRoute)) {
                                 Log.i("lanie", "Auto update route = $currentRoute")
+                                value = currentRoute
                                 onPreferenceChangeListener.onPreferenceChange(this, currentRoute)
                             }
                         }
@@ -125,6 +126,7 @@ class FilterFragment : PreferenceFragmentCompat() {
                         val currentStop = BusDataManager.currentStop
                         if (currentStop.isNotEmpty() && entryValues.contains(currentStop)) {
                             Log.i("lanie", "Auto update route = $currentStop")
+                            value = currentStop
                             onPreferenceChangeListener.onPreferenceChange(this, currentStop)
                         }
                     }
