@@ -20,14 +20,26 @@ object BusDataManager {
         fun onResultUpdate(newResult: List<BusInfoModel>)
     }
 
-    private val sharedPref =
+    val sharedPref =
         App.context.getSharedPreferences("com.example.aqiinfo_preferences", Context.MODE_PRIVATE)
 
     var currentDownTown = sharedPref.getString("filter_option_town", "") ?: ""
+        set(value) {
+            field = value
+            sharedPref.edit().putString("filter_option_town", value).apply()
+        }
 
     var currentSubRoute = sharedPref.getString("filter_option_route", "") ?: ""
+        set(value) {
+            field = value
+            sharedPref.edit().putString("filter_option_route", value).apply()
+        }
 
     var currentStop = sharedPref.getString("filter_option_stop", "") ?: ""
+        set(value) {
+            field = value
+            sharedPref.edit().putString("filter_option_stop", value).apply()
+        }
 
     private val dataUpdateListeners = ArrayList<DataUpdateListener>()
     private val apiHelper = BusAPIHelper()

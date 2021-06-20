@@ -105,9 +105,10 @@ class FilterFragment : PreferenceFragmentCompat() {
                             entryValues = it.toTypedArray()
                             Log.i("lanie", "route_enable")
                             isEnabled = true
-                            if (value?.isNotEmpty() == true) {
-                                Log.i("lanie", "route value = $value")
-                                onPreferenceChangeListener.onPreferenceChange(this, value)
+                            val currentRoute = BusDataManager.currentSubRoute
+                            if (currentRoute.isNotEmpty() && entryValues.contains(currentRoute)) {
+                                Log.i("lanie", "Auto update route = $currentRoute")
+                                onPreferenceChangeListener.onPreferenceChange(this, currentRoute)
                             }
                         }
                     }
@@ -121,9 +122,10 @@ class FilterFragment : PreferenceFragmentCompat() {
                         entryValues = it.toTypedArray()
                         Log.i("lanie", "stop_enable")
                         isEnabled = true
-                        if (value?.isNotEmpty() == true) {
-                            Log.i("lanie", "stop value = $value")
-                            onPreferenceChangeListener.onPreferenceChange(this, value)
+                        val currentStop = BusDataManager.currentStop
+                        if (currentStop.isNotEmpty() && entryValues.contains(currentStop)) {
+                            Log.i("lanie", "Auto update route = $currentStop")
+                            onPreferenceChangeListener.onPreferenceChange(this, currentStop)
                         }
                     }
                     Log.i("lanie", "Stop updated: ${it.size}")
