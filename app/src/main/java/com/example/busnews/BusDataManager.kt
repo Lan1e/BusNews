@@ -70,12 +70,12 @@ object BusDataManager {
 
     fun updateResult() {
         routes.find {
-            it.subRoute == currentSubRoute
+            it.getRouteName() == currentSubRoute
         }?.let {
             apiHelper.fetchBusDelayByStop(
                 downTown = currentDownTown,
                 mainRoute = it.mainRoute,
-                subRoute = it.subRoute,
+                subRoute = it.getRouteName(),
                 stop = currentStop,
                 onFailure = {
 
@@ -157,9 +157,9 @@ object BusDataManager {
                 Log.i("lanie", "update stop by db")
             } else {
                 routes.find {
-                    it.subRoute == currentSubRoute
+                    it.getRouteName() == currentSubRoute
                 }?.apply {
-                    updateStopByAPI(currentDownTown, mainRoute, subRoute)
+                    updateStopByAPI(currentDownTown, mainRoute, getRouteName())
                     Log.i("lanie", "update stop by api")
                 }
             }

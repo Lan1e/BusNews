@@ -21,6 +21,7 @@ import java.security.SignatureException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.zip.GZIPInputStream
+import kotlin.collections.HashSet
 
 
 class BusAPIHelper {
@@ -48,18 +49,30 @@ class BusAPIHelper {
     ) {
         val apiUrl = "$API_URL_PREFIX/v2/Bus/Shape/City/$downTown" +
                 "?$${ApiParam("select", "SubRouteName, RouteName")}" +
-                "&$${ApiParam("filter", "Direction ne '1'")}" +
                 "&$${ApiParam("top", "500")}" +
                 "&$${ApiParam("format", "JSON")}"
         sendRequest(apiUrl, onFailure) {
+            val mainSet: HashSet<String> = java.util.HashSet()
+            val subSet: HashSet<String> = java.util.HashSet()
             Gson().fromJson<Array<RoutesInfoVo.RouteInfoVo>>(
                 it,
                 Array<RoutesInfoVo.RouteInfoVo>::class.java
             ).map {
-                RouteInfoModel(it.RouteName.Zh_tw, it.SubRouteName.Zh_tw)
+                RouteInfoModel(it.RouteName.Zh_tw, it.SubRouteName?.Zh_tw ?: "")
+            }.filter {
+                if (mainSet.contains(it.mainRoute) && subSet.contains(it.getRouteName())) {
+                    false
+                } else {
+                    true.also { ignore ->
+                        mainSet.add(it.mainRoute)
+                        subSet.add(it.getRouteName())
+                    }
+                }
+            }.sortedBy {
+                it.getRouteName()
             }.let {
                 it.map {
-                    RouteInfoEntity(downTown, it.mainRoute, it.subRoute)
+                    RouteInfoEntity(downTown, it.mainRoute, it.getRouteName())
                 }.forEach {
                     BusDatabase(App.context).getRoomDao().insert(it)
                 }
@@ -71,13 +84,18 @@ class BusAPIHelper {
 
     fun fetchAllStopsInOrderByRoute(
         downTown: String,
-        mainRoute:String,
+        mainRoute: String,
         subRoute: String,
         onFailure: (() -> Unit)? = null,
         onResponse: ((List<RouteStopInfoModel>) -> Unit)? = null
     ) {
         val apiUrl = "$API_URL_PREFIX/v2/Bus/StopOfRoute/City/$downTown/$mainRoute" +
-                "?$${ApiParam("filter", "Direction ne '1' and SubRouteName/Zh_tw eq '$subRoute'")}" +
+                "?$${
+                    ApiParam(
+                        "filter",
+                        "Direction ne '1' and SubRouteName/Zh_tw eq '$subRoute'"
+                    )
+                }" +
                 "&$${ApiParam("top", "500")}" +
                 "&$${ApiParam("format", "JSON")}"
         sendRequest(apiUrl, onFailure) {
@@ -100,7 +118,7 @@ class BusAPIHelper {
 
     fun fetchBusDelayByStop(
         downTown: String,
-        mainRoute:String,
+        mainRoute: String,
         subRoute: String,
         stop: String,
         onFailure: (() -> Unit)? = null,
@@ -128,7 +146,7 @@ class BusAPIHelper {
 
     fun fetchCurrentBusPositionByRoute(
         downTown: String,
-        plateNum:String,
+        plateNum: String,
         route: String,
         onFailure: (() -> Unit)? = null,
         onResponse: ((List<RouteStopInfoModel>) -> Unit)? = null

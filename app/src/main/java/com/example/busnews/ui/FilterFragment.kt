@@ -98,7 +98,7 @@ class FilterFragment : PreferenceFragmentCompat() {
                 route.observe(activity) {
                     it ?: return@observe
                     it.map {
-                        it.subRoute
+                        it.getRouteName()
                     }.let {
                         filterOptionRoute.apply {
                             entries = it.toTypedArray()
