@@ -46,7 +46,7 @@ class ResultFragment : PreferenceFragmentCompat() {
 
     private fun addPrefCategoryContents(results: List<BusInfoModel>) {
         results.forEach {
-            categoryResult.addPreference(Preference(activity).apply {
+            categoryResult.addPreference(MyPreference(activity).apply {
                 title = it.delayMin.toString()
                 summary = it.plateNumber
             })

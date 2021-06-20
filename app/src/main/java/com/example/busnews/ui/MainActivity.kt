@@ -8,6 +8,7 @@ import com.example.busnews.BusDataManager
 import com.example.busnews.R
 import com.example.busnews.api.BusAPIHelper
 import com.facebook.stetho.Stetho
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -26,9 +27,8 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction().replace(R.id.result_container, ResultFragment())
             .commitAllowingStateLoss()
 
-
-////
-//         trigger this to update result
-////        BusDataManager.updateResult()
+        button.setOnClickListener {
+            BusDataManager.updateResult()
+        }
     }
 }

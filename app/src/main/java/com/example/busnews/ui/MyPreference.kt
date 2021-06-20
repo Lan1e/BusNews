@@ -15,12 +15,5 @@ class MyPreference(
         layoutResource = R.layout.layout_my_pref
         summary = " - "
     }
-
-//    override fun onBindViewHolder(holder: PreferenceViewHolder?) {
-//        super.onBindViewHolder(holder)
-//
-//        holder?.itemView?.findViewById<TextView>(R.id.direction)
-//        holder?.itemView?.findViewById<TextView>(android.R.id.title)
-//        holder?.itemView?.findViewById<TextView>(android.R.id.summary)
-//    }
+    
 }

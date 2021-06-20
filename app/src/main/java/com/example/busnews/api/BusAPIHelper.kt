@@ -107,7 +107,7 @@ class BusAPIHelper {
         onResponse: ((List<BusInfoModel>) -> Unit)? = null
     ) {
         val apiUrl = "$API_URL_PREFIX/v2/Bus/EstimatedTimeOfArrival/City/$downTown/$mainRoute" +
-                "?$${ApiParam("select", "EstimateTime")}" +
+                "?$${ApiParam("select", "EstimateTime, PlateNumb")}" +
                 "&$${
                     ApiParam(
                         "filter",
