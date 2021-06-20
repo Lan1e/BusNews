@@ -2,9 +2,13 @@ package com.example.busnews.api
 
 import SslUtils
 import android.util.Log
+import com.example.busnews.App
 import com.example.busnews.data.BusInfoModel
 import com.example.busnews.data.RouteInfoModel
 import com.example.busnews.data.RouteStopInfoModel
+import com.example.busnews.database.BusDatabase
+import com.example.busnews.database.RouteInfoEntity
+import com.example.busnews.database.RouteStopEntity
 import com.google.gson.Gson
 import com.google.gson.stream.JsonReader
 import kotlinx.coroutines.Dispatchers
@@ -43,7 +47,7 @@ class BusAPIHelper {
         onResponse: ((List<RouteInfoModel>) -> Unit)? = null
     ) {
         val apiUrl = "$API_URL_PREFIX/v2/Bus/Shape/City/$downTown" +
-                "?$${ApiParam("select", "SubRouteName")}" +
+                "?$${ApiParam("select", "SubRouteName, RouteName")}" +
                 "&$${ApiParam("filter", "Direction ne '1'")}" +
                 "&$${ApiParam("top", "500")}" +
                 "&$${ApiParam("format", "JSON")}"
@@ -52,8 +56,13 @@ class BusAPIHelper {
                 it,
                 Array<RoutesInfoVo.RouteInfoVo>::class.java
             ).map {
-                RouteInfoModel(it.SubRouteName.Zh_tw)
+                RouteInfoModel(it.RouteName.Zh_tw, it.SubRouteName.Zh_tw)
             }.let {
+                it.map {
+                    RouteInfoEntity(downTown, it.mainRoute, it.subRoute)
+                }.forEach {
+                    BusDatabase(App.context).getRoomDao().insert(it)
+                }
                 onResponse?.invoke(it)
                 Log.e("lanie", "${it.size} AllRoute")
             }
@@ -62,12 +71,13 @@ class BusAPIHelper {
 
     fun fetchAllStopsInOrderByRoute(
         downTown: String,
-        route: String,
+        mainRoute:String,
+        subRoute: String,
         onFailure: (() -> Unit)? = null,
         onResponse: ((List<RouteStopInfoModel>) -> Unit)? = null
     ) {
-        val apiUrl = "$API_URL_PREFIX/v2/Bus/StopOfRoute/City/$downTown/$route" +
-                "?$${ApiParam("filter", "Direction ne '1'")}" +
+        val apiUrl = "$API_URL_PREFIX/v2/Bus/StopOfRoute/City/$downTown/$mainRoute" +
+                "?$${ApiParam("filter", "Direction ne '1' and SubRouteName/Zh_tw eq '$subRoute'")}" +
                 "&$${ApiParam("top", "500")}" +
                 "&$${ApiParam("format", "JSON")}"
         sendRequest(apiUrl, onFailure) {
@@ -77,6 +87,11 @@ class BusAPIHelper {
                         RouteStopInfoModel(name = it.StopName.Zh_tw)
                     }
                 }.let {
+                    it.map {
+                        RouteStopEntity(subRoute, it.name)
+                    }.forEach {
+                        BusDatabase(App.context).getRoomDao().insert(it)
+                    }
                     onResponse?.invoke(it)
                     Log.e("lanie", "${it.size} AllStopsInOrder")
                 }
@@ -85,17 +100,18 @@ class BusAPIHelper {
 
     fun fetchBusDelayByStop(
         downTown: String,
-        route: String,
+        mainRoute:String,
+        subRoute: String,
         stop: String,
         onFailure: (() -> Unit)? = null,
         onResponse: ((List<BusInfoModel>) -> Unit)? = null
     ) {
-        val apiUrl = "$API_URL_PREFIX/v2/Bus/EstimatedTimeOfArrival/City/$downTown/$route" +
+        val apiUrl = "$API_URL_PREFIX/v2/Bus/EstimatedTimeOfArrival/City/$downTown/$mainRoute" +
                 "?$${ApiParam("select", "EstimateTime")}" +
                 "&$${
                     ApiParam(
                         "filter",
-                        "PlateNumb ne '' and PlateNumb ne '-1' and StopName/Zh_tw eq '$stop'"
+                        "PlateNumb ne '' and PlateNumb ne '-1' and StopName/Zh_tw eq '$stop' and SubRouteName/Zh_tw eq '$subRoute'"
                     )
                 }" +
                 "&$${ApiParam("top", "500")}" +
@@ -112,13 +128,14 @@ class BusAPIHelper {
 
     fun fetchCurrentBusPositionByRoute(
         downTown: String,
+        plateNum:String,
         route: String,
         onFailure: (() -> Unit)? = null,
         onResponse: ((List<RouteStopInfoModel>) -> Unit)? = null
     ) {
         val apiUrl = "$API_URL_PREFIX/v2/Bus/RealTimeNearStop/City/$downTown/$route" +
                 "?$${ApiParam("select", "StopName")}" +
-                "&$${ApiParam("filter", "PlateNumb eq '$route'")}" +
+                "&$${ApiParam("filter", "PlateNumb eq '$plateNum'")}" +
                 "&$${ApiParam("top", "500")}" +
                 "&$${ApiParam("format", "JSON")}"
         sendRequest(apiUrl, onFailure) {

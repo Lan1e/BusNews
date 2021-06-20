@@ -28,15 +28,17 @@ class FilterFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.pref_filter_fragment)
 
-        updateView()
         bindPrefListener()
         bindObservers()
+        updateView()
+
     }
 
     private fun updateView() {
-        filterOptionTown.summary = filterOptionTown.entry
-        filterOptionRoute.summary = filterOptionRoute.value
-        filterOptionStop.summary = filterOptionStop.value
+        filterOptionTown.onPreferenceChangeListener.onPreferenceChange(
+            filterOptionTown,
+            filterOptionTown.value
+        )
     }
 
     private fun bindPrefListener() {
@@ -44,7 +46,9 @@ class FilterFragment : PreferenceFragmentCompat() {
             Preference.OnPreferenceChangeListener { pref, newValue ->
                 (pref as? ListPreference)?.let {
                     it.summary = it.entries[it.findIndexOfValue(newValue.toString())]
+                    BusDataManager.currentDownTown = newValue.toString()
                 }
+                Log.e("lanie", "disable")
                 filterOptionRoute.disable()
                 filterOptionStop.disable()
                 BusDataManager.updateRoute()
@@ -54,6 +58,7 @@ class FilterFragment : PreferenceFragmentCompat() {
             Preference.OnPreferenceChangeListener { pref, newValue ->
                 (pref as? ListPreference)?.let {
                     it.summary = it.entries[it.findIndexOfValue(newValue.toString())]
+                    BusDataManager.currentSubRoute = newValue.toString()
                 }
                 filterOptionStop.disable()
                 BusDataManager.updateStop()
@@ -63,6 +68,7 @@ class FilterFragment : PreferenceFragmentCompat() {
             Preference.OnPreferenceChangeListener { pref, newValue ->
                 (pref as? ListPreference)?.let {
                     it.summary = it.entries[it.findIndexOfValue(newValue.toString())]
+                    BusDataManager.currentStop = newValue.toString()
                 }
                 BusDataManager.updateResult()
                 true
@@ -87,19 +93,31 @@ class FilterFragment : PreferenceFragmentCompat() {
                 }
 
                 route.observe(activity) {
-                    filterOptionRoute.apply {
-                        entries = it.toTypedArray()
-                        entryValues = it.toTypedArray()
-                        isEnabled = true
+                    it ?: return@observe
+                    it.map {
+                        it.subRoute
+                    }.let {
+                        filterOptionRoute.apply {
+                            entries = it.toTypedArray()
+                            entryValues = it.toTypedArray()
+                            Log.i("lanie", "route_enable")
+                            isEnabled = true
+                            if (value.isNotEmpty())
+                                onPreferenceChangeListener.onPreferenceChange(this, value)
+                        }
                     }
                     Log.i("lanie", "Route updated: ${it.size}")
                 }
 
                 stop.observe(activity) {
+                    it ?: return@observe
                     filterOptionStop.apply {
                         entries = it.toTypedArray()
                         entryValues = it.toTypedArray()
+                        Log.i("lanie", "stop_enable")
                         isEnabled = true
+                        if (value.isNotEmpty())
+                            onPreferenceChangeListener.onPreferenceChange(this, value)
                     }
                     Log.i("lanie", "Stop updated: ${it.size}")
                 }

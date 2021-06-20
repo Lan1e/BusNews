@@ -1,6 +1,7 @@
 package com.example.busnews.data
 
 class RouteInfoModel(
-    val name: String
+    val mainRoute: String,
+    val subRoute:String
 ) {
 }

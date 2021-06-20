@@ -1,9 +1,12 @@
 package com.example.busnews.ui
 
 import android.os.Bundle
+import android.widget.Toast
+import android.widget.Toast.LENGTH_LONG
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
+import com.example.busnews.App
 import com.example.busnews.R
 import com.example.busnews.data.BusInfoModel
 
@@ -23,7 +26,11 @@ class ResultFragment : PreferenceFragmentCompat() {
         (activity as? MainActivity)?.let { activity ->
             viewModel?.apply {
                 result.observe(activity) {
-                    updateResults(it)
+                    if (it.isEmpty()) {
+                        Toast.makeText(App.context, "目前附近沒有符合條件的車輛", LENGTH_LONG).show()
+                    } else {
+                        updateResults(it)
+                    }
                 }
             }
         }
@@ -40,7 +47,7 @@ class ResultFragment : PreferenceFragmentCompat() {
     private fun addPrefCategoryContents(results: List<BusInfoModel>) {
         results.forEach {
             categoryResult.addPreference(Preference(activity).apply {
-                title = it.estimateDelay
+                title = it.delayMin.toString()
                 summary = it.plateNumber
             })
         }

@@ -4,13 +4,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.busnews.BusDataManager
 import com.example.busnews.data.BusInfoModel
+import com.example.busnews.data.RouteInfoModel
 
 class LiveDataViewModel : ViewModel() {
     val downTown = MutableLiveData<ArrayList<String>>().apply {
         value = ArrayList()
     }
-    val route = MutableLiveData<ArrayList<String>>().apply {
-        value = ArrayList()
+    val route = MutableLiveData<ArrayList<RouteInfoModel>>().apply {
+
     }
     val stop = MutableLiveData<ArrayList<String>>().apply {
         value = ArrayList()
@@ -27,8 +28,8 @@ class LiveDataViewModel : ViewModel() {
                 }
             }
 
-            override fun onRouteUpdate(newRoute: List<String>) {
-                route.value = ArrayList<String>().apply{
+            override fun onRouteUpdate(newRoute: List<RouteInfoModel>) {
+                route.value = ArrayList<RouteInfoModel>().apply{
                     addAll(newRoute)
                 }
             }

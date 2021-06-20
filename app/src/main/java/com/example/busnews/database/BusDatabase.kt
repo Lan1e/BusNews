@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [(DownTownRouteEntity::class), (RouteStopEntity::class)], version = 1)
+@Database(entities = [(RouteInfoEntity::class), (RouteStopEntity::class)], version = 1)
 abstract class BusDatabase : RoomDatabase() {
     companion object {
         @Volatile private var instance: BusDatabase? = null

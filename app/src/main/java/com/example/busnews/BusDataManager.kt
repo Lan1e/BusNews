@@ -1,6 +1,8 @@
 package com.example.busnews
 
 import android.content.Context
+import android.util.Log
+import android.widget.Toast
 import com.example.busnews.api.BusAPIHelper
 import com.example.busnews.data.BusInfoModel
 import com.example.busnews.data.RouteInfoModel
@@ -13,7 +15,7 @@ import kotlinx.coroutines.withContext
 object BusDataManager {
     interface DataUpdateListener {
         fun onTownUpdate(newTown: List<String>)
-        fun onRouteUpdate(newRoute: List<String>)
+        fun onRouteUpdate(newRoute: List<RouteInfoModel>)
         fun onStopUpdate(newStop: List<String>)
         fun onResultUpdate(newResult: List<BusInfoModel>)
     }
@@ -21,14 +23,11 @@ object BusDataManager {
     private val sharedPref =
         App.context.getSharedPreferences("com.example.aqiinfo_preferences", Context.MODE_PRIVATE)
 
-    private val currentDownTown
-        get() = sharedPref.getString("filter_option_town", "") ?: ""
+    var currentDownTown = sharedPref.getString("filter_option_town", "") ?: ""
 
-    private val currentRoute
-        get() = sharedPref.getString("filter_option_route", "") ?: ""
+    var currentSubRoute = sharedPref.getString("filter_option_route", "") ?: ""
 
-    private val currentStop
-        get() = sharedPref.getString("filter_option_stop", "") ?: ""
+    var currentStop = sharedPref.getString("filter_option_stop", "") ?: ""
 
     private val dataUpdateListeners = ArrayList<DataUpdateListener>()
     private val apiHelper = BusAPIHelper()
@@ -38,7 +37,7 @@ object BusDataManager {
             add(it)
         }
     }
-    private val routes = ArrayList<String>()
+    private val routes = ArrayList<RouteInfoModel>()
     private val stops = ArrayList<String>()
     private val result = ArrayList<BusInfoModel>()
 
@@ -58,31 +57,38 @@ object BusDataManager {
     }
 
     fun updateResult() {
-        apiHelper.fetchBusDelayByStop(
-            downTown = currentDownTown,
-            route = currentRoute,
-            stop = currentStop,
-            onFailure = {
+        routes.find {
+            it.subRoute == currentSubRoute
+        }?.let {
+            apiHelper.fetchBusDelayByStop(
+                downTown = currentDownTown,
+                mainRoute = it.mainRoute,
+                subRoute = it.subRoute,
+                stop = currentStop,
+                onFailure = {
 
-            },
-            onResponse = { results ->
-                this.result.clear()
-                this.result.addAll(results)
-                GlobalScope.launch(Dispatchers.Main) {
-                    dataUpdateListeners.forEach {
-                        it.onResultUpdate(results)
+                },
+                onResponse = { results ->
+                    result.clear()
+                    result.addAll(results)
+                    GlobalScope.launch(Dispatchers.Main) {
+                        dataUpdateListeners.forEach {
+                            it.onResultUpdate(results)
+                        }
                     }
                 }
-            }
-        )
+            )
+        }
     }
 
     fun updateRoute() {
         getRouteFromDatabase(currentDownTown) {
             if (it.isNotEmpty()) {
                 updateRouteByDB(it)
+                Log.i("lanie", "update route by db")
             } else {
                 updateRouteByAPI(currentDownTown)
+                Log.i("lanie", "update route by api")
             }
         }
     }
@@ -93,9 +99,7 @@ object BusDataManager {
             onResponse = { response ->
                 this.routes.apply {
                     clear()
-                    response.map {
-                        it.name
-                    }.let { routes ->
+                    response.let { routes ->
                         addAll(routes)
                         GlobalScope.launch(Dispatchers.Main) {
                             dataUpdateListeners.forEach {
@@ -108,7 +112,7 @@ object BusDataManager {
         )
     }
 
-    private fun updateRouteByDB(routes: List<String>) =
+    private fun updateRouteByDB(routes: List<RouteInfoModel>) =
         this.routes.apply {
             clear()
             addAll(routes)
@@ -122,10 +126,11 @@ object BusDataManager {
 
     private fun getRouteFromDatabase(
         downTown: String,
-        listener: (List<String>) -> Unit
+        listener: (List<RouteInfoModel>) -> Unit
     ) {
         GlobalScope.launch(Dispatchers.IO) {
             BusDatabase(App.context).getRoomDao().searchRouteByDownTown(downTown).let {
+                Log.i("lanie", "getRouteFromDatabase")
                 withContext(Dispatchers.Main) {
                     listener.invoke(it)
                 }
@@ -134,19 +139,26 @@ object BusDataManager {
     }
 
     fun updateStop() {
-        getStopFromDataBase(currentDownTown, currentRoute) {
+        getStopFromDataBase(currentDownTown, currentSubRoute) {
             if (it.isNotEmpty()) {
                 updateStopByDB(it)
+                Log.i("lanie", "update stop by db")
             } else {
-                updateStopByAPI(currentDownTown, currentRoute)
+                routes.find {
+                    it.subRoute == currentSubRoute
+                }?.apply {
+                    updateStopByAPI(currentDownTown, mainRoute, subRoute)
+                    Log.i("lanie", "update stop by api")
+                }
             }
         }
     }
 
-    private fun updateStopByAPI(downTown: String, route: String) {
+    private fun updateStopByAPI(downTown: String, mainRoute: String, subRoute: String) {
         apiHelper.fetchAllStopsInOrderByRoute(
             downTown = downTown,
-            route = route,
+            mainRoute = mainRoute,
+            subRoute = subRoute,
             onResponse = { response ->
                 this.stops.apply {
                     clear()

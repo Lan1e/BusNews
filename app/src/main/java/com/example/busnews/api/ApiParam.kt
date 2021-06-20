@@ -10,6 +10,7 @@ data class ApiParam(
         private const val SPACE = ' '
         private const val SINGLE_QUOTATION_MARK = '\''
         private const val SLASH = '/'
+        private const val COMMA = ','
     }
 
     override fun toString(): String {
@@ -17,14 +18,18 @@ data class ApiParam(
     }
 
     private fun String.apiFormat() =
-        this.let {
-            it.replace(Regex(SPACE.toString()), SPACE.toHex()).let {
-
-                it.replace(Regex(SLASH.toString()), SLASH.toHex())
-
-            }
-        }
+        replaceSymbols(listOf(SPACE, SINGLE_QUOTATION_MARK, SLASH, COMMA))
 
     private fun Char.toHex() =
-        "%${this.toInt().toHexString()}"
+        "%${toInt().toHexString()}"
+
+    private fun String.replaceSymbols(symbols: List<Char>) =
+        let {
+            var result = this
+            symbols.forEach {
+                result = result.replace(Regex(it.toString()), it.toHex())
+            }
+            return@let result
+        }
+
 }
